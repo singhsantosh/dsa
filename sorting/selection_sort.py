@@ -23,8 +23,11 @@ def selection_sort(arr):
 
 if __name__ == "__main__":
     arr = [5, 8, 3, 9, 4, 1, 7]
+    output_arr = [1, 3, 4, 5, 7, 8, 9]
+    input_arr = arr.copy()
     sorted_arr = selection_sort(arr)
-    if arr == sorted_arr:
-        print(f'Output - {sorted_arr} => Test pass!')
+    print(f'Input array  - {input_arr}')
+    if output_arr == sorted_arr:
+        print(f'Output array - {sorted_arr} => Test pass!')
     else:
         print(f'Output - {sorted_arr} => Test failed!')
