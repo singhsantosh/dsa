@@ -1,2 +1,2 @@
 # DSA 
-This is a repository to practice to host all the dsa implementation
+This is to practice dsa(data structure and algorithms).
