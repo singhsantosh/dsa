@@ -1,9 +1,4 @@
-"""
-Asymptotic complexity in terms of size of 'arr' 'n':
-* Time: O(n ^ 2).
-* Auxiliary space: O(1).
-* Total space: O(n).
-"""
+import unittest
 
 
 def selection_sort(arr):
@@ -21,13 +16,26 @@ def selection_sort(arr):
     return arr
 
 
+class TestSelectionSort(unittest.TestCase):
+
+    def test_empty_list(self):
+        self.assertEqual(selection_sort([]), [])
+
+    def test_single_element(self):
+        self.assertEqual(selection_sort([5]), [5])
+
+    def test_sorted_list(self):
+        self.assertEqual(selection_sort([1, 2, 3, 4, 5]), [1, 2, 3, 4, 5])
+
+    def test_reverse_sorted_list(self):
+        self.assertEqual(selection_sort([5, 4, 3, 2, 1]), [1, 2, 3, 4, 5])
+
+    def test_unsorted_list(self):
+        self.assertEqual(selection_sort([3, 5, 2, 4, 1]), [1, 2, 3, 4, 5])
+
+    def test_duplicate_elements(self):
+        self.assertEqual(selection_sort([3, 5, 3, 4, 3]), [3, 3, 3, 4, 5])
+
+
 if __name__ == "__main__":
-    arr = [5, 8, 3, 9, 4, 1, 7]
-    output_arr = [1, 3, 4, 5, 7, 8, 9]
-    input_arr = arr.copy()
-    sorted_arr = selection_sort(arr)
-    print(f'Input array  - {input_arr}')
-    if output_arr == sorted_arr:
-        print(f'Output array - {sorted_arr} => Test pass!')
-    else:
-        print(f'Output - {sorted_arr} => Test failed!')
+    unittest.main()
