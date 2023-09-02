@@ -8,7 +8,6 @@ def bubble_sort(arr):
     Returns:
      list_int32
     """
-    # Write your code here.
     n = len(arr)
     for i in range(n):
         # Last i elements are already in place
