@@ -18,7 +18,7 @@ def merge_sort(arr):
     n = len(arr) - 1
     if n < 0:
         return []
-    helper(arr, 0, len(arr)-1)
+    helper(arr, 0, n)
     return arr
 
 
@@ -52,7 +52,7 @@ def helper(arr, start, end):
         aux.append(arr[j])
         j += 1
 
-    arr = aux
+    arr[start:end + 1] = aux  # Modify the original 'arr' in place
 
     return
 
