@@ -15,16 +15,13 @@ def merge_sort(arr):
     Returns:
      list_int32
     """
-    n = len(arr) - 1
-    if n < 0:
-        return []
-    helper(arr, 0, n)
+    helper(arr, 0, len(arr) - 1)
     return arr
 
 
 def helper(arr, start, end):
     # Leaf worker node
-    if start == end:
+    if start >= end:
         return
 
     # Internal worker node
@@ -53,8 +50,6 @@ def helper(arr, start, end):
         j += 1
 
     arr[start:end + 1] = aux  # Modify the original 'arr' in place
-
-    return
 
 
 class TestInsertionSort(unittest.TestCase):
