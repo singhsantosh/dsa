@@ -2,8 +2,8 @@ import unittest
 
 """
 Asymptotic complexity in terms of size of 'arr' 'n':
-* Time: O(n ^ 2).
-* Auxiliary space: O(1).
+* Time: O(n * log n).
+* Auxiliary space: O(n).
 * Total space: O(n).
 """
 
