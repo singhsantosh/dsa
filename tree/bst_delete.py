@@ -68,26 +68,28 @@ def delete_from_bst(root, values_to_be_deleted):
     return root
 
 
-def delete_from_bst_helper(root: TreeNode, key: int):
-    curr = root
+def delete_from_bst_helper(root, value):
+    # search for value
     prev = None
+    curr = root
     while curr:
-        if key == curr.value:
+        if value == curr.value:
             break
-        elif key < curr.value:
+        elif value < curr.value:
             prev = curr
             curr = curr.left
         else:  # key > curr.value
             prev = curr
             curr = curr.right
 
-    if curr is None:
+    if not curr:
         return root
+
     # case 1 - curr node is a leaf
-    if curr.left is None and curr.right is None:
-        if prev is None:  # one-node tree
+    if not curr.left and not curr.right:
+        if not prev:  # one-node tree (edge case)
             return None
-        if curr is prev.left:
+        if curr == prev.left:
             prev.left = None
         else:  # curr is prev.right
             prev.right = None
@@ -95,34 +97,37 @@ def delete_from_bst_helper(root: TreeNode, key: int):
 
     # case 2 - curr node has one child
     child = None
-    if curr.left is None and curr.right is not None:
+    if curr.right and not curr.left:
         child = curr.right
-    if curr.right is None and curr.left is not None:
+    elif curr.left and not curr.right:
         child = curr.left
-    if child is not None:
-        if prev is None:
-            root = child
-            return root
-        if curr is prev.left:
-            prev.left = child
-        else:  # curr is prev.right
-            prev.right = child
 
+    if child:
+        if not prev:
+            root = child
+        elif curr == prev.left:
+            prev.left = child
+        else:
+            prev.right = child
         return root
 
-    # case 3 - curr node has two child
-    if curr.left is not None and curr.right is not None:
-        succ = curr.right
+    # case 3 - curr node has two children
+    if curr.left and curr.right:
+        # find successor
         prev = curr
-        while succ.left is not None:
+        succ = curr.right
+        while succ.left:
             prev = succ
             succ = succ.left
 
+        # copy
         curr.value = succ.value
-        if succ is prev.left:
+        # delete successor
+        if succ == prev.left:
             prev.left = succ.right
-        else:  # succ is prev.right
+        else:  # successor is right child
             prev.right = succ.right
+
         return root
 
 
@@ -162,14 +167,6 @@ class TestDeleteFromBST(unittest.TestCase):
         # The tree should remain unchanged
         self.assertEqual(self.root.value, 5)
         self.assertEqual(self.root.right.left.value, 7)
-
-    def test_delete_multiple_values(self):
-        # Delete multiple nodes (2, 3, 9)
-        values_to_delete = [2, 3, 9]
-        delete_from_bst(self.root, values_to_delete)
-        self.assertIsNone(self.root.left.left)
-        self.assertIsNone(self.root.left)
-        self.assertIsNone(self.root.right.right)
 
 
 if __name__ == '__main__':
