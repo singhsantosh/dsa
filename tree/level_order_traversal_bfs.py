@@ -10,7 +10,7 @@ class BinaryTreeNode:
         self.right = None
 
 
-def level_order_traversal(root):
+def level_order_traversal(root: BinaryTreeNode) -> list(list()):
     """
     Args:
      root(BinaryTreeNode_int32)
