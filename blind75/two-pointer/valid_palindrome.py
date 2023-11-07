@@ -11,8 +11,6 @@ def is_palindrome(s: list) -> bool:
 
     return True
 
-# Driver Code
-
 
 def main():
 
