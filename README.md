@@ -1,2 +1,2 @@
 # DSA 
-This is to practice dsa(data structure and algorithms).
+This is to practice dsa (Data Structure and Algorithms).
