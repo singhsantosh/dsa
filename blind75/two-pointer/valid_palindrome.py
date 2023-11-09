@@ -1,6 +1,10 @@
 # leetcode problem : https://leetcode.com/problems/valid-palindrome/description/
+# 125. Valid Palindrome
 # time  : O(n)
 # space : O(1)
+import unittest
+
+
 class Solution:
     def is_palindrome(self, s: str) -> bool:
         s = s.lower()
@@ -26,18 +30,22 @@ class Solution:
         return ('a' <= c <= 'z' or '0' <= c <= '9')
 
 
-def main():
-    s = Solution()
-    test_cases = ["RACEACAR", "A", "ABCDEFGFEDCBA",
-                  "ABC", "ABCBA", "ABBA", "RACEACAR"]
-    for i in range(len(test_cases)):
-        print("Test Case #", i + 1)
-        print("-" * 100)
-        print("The input string is '", test_cases[i], "' and the length of the string is ", len(
-            test_cases[i]), ".", sep='')
-        print("Is it a palindrome?.....", s.is_palindrome(test_cases[i]))
-        print("-" * 100)
+class TestSolution(unittest.TestCase):
+    def setUp(self):
+        self.solution = Solution()
+
+    def test_is_palindrome(self):
+        test_cases = [
+            ("A man, a plan, a canal: Panama", True),
+            ("race a car", False),
+            ("", True),
+            ("No 'x' in Nixon", True),
+            ("Was it a car or a cat I saw?", True)
+        ]
+
+        for s, expected_output in test_cases:
+            self.assertEqual(self.solution.is_palindrome(s), expected_output)
 
 
 if __name__ == '__main__':
-    main()
+    unittest.main()
