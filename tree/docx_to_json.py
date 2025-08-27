@@ -2,6 +2,7 @@
 import json
 from docx import Document
 from docx.shared import RGBColor
+from docx.enum.text import WD_LINE_SPACING  
 
 def rgb_to_hex(rgb: RGBColor | None) -> str | None:
     if not rgb:
@@ -27,10 +28,10 @@ def paragraph_alignment_name(p):
     a = p.alignment
     return a.name if a else None  # LEFT, CENTER, RIGHT, JUSTIFY, etc.
 
+
 def paragraph_to_dict(p):
-    # Style name carries important semantics (Heading 1, List Number, List Bullet, etc.)
+    # style + outline (existing)
     style_name = p.style.name if p.style else None
-    # Level hint for headings / outline (if present)
     outline_level = None
     try:
         if p.style and p.style.paragraph_format and p.style.paragraph_format.outline_level is not None:
@@ -38,13 +39,42 @@ def paragraph_to_dict(p):
     except Exception:
         pass
 
+    # NEW: spacing/line spacing
+    pf = p.paragraph_format
+    space_before = float(pf.space_before.pt) if pf.space_before else None
+    space_after  = float(pf.space_after.pt)  if pf.space_after  else None
+    # line_spacing can be a float (multiple) or a length; try float first
+    ls_val = pf.line_spacing
+    try:
+        line_spacing = float(ls_val) if ls_val is not None else None
+    except Exception:
+        line_spacing = float(getattr(ls_val, "pt", 0.0)) if ls_val else None
+    line_rule = pf.line_spacing_rule.name if pf.line_spacing_rule else None
+
+    # NEW: list/numbering (numId/ilvl if present)
+    list_info = None
+    pPr = p._p.pPr  # low-level pPr
+    if pPr is not None and pPr.numPr is not None and pPr.numPr.numId is not None:
+        numId = int(pPr.numPr.numId.val)
+        ilvl = int(pPr.numPr.ilvl.val) if pPr.numPr.ilvl is not None else 0
+        list_info = {"numId": numId, "ilvl": ilvl}
+
     return {
         "type": "paragraph",
         "style": style_name,
-        "alignment": paragraph_alignment_name(p),
+        "alignment": p.alignment.name if p.alignment else None,
         "outline_level": outline_level,
+        # NEW:
+        "spacing": {
+            "space_before_pt": space_before,
+            "space_after_pt": space_after,
+            "line_spacing": line_spacing,
+            "line_spacing_rule": line_rule,  # e.g., SINGLE, DOUBLE, MULTIPLE, AT_LEAST, EXACTLY
+        },
+        "list": list_info,
         "runs": [run_to_dict(r) for r in p.runs],
     }
+
 
 def table_to_dict(t):
     rows = []
