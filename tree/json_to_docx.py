@@ -3,6 +3,10 @@ import json, os
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX
 from docx.shared import Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_COLOR_INDEX, WD_LINE_SPACING
+from docx.shared import Pt, RGBColor
+from docx.oxml.shared import OxmlElement, qn
+from docx.table import _Cell
 
 ALIGN_MAP = {
     "LEFT": WD_ALIGN_PARAGRAPH.LEFT,
@@ -42,24 +46,91 @@ def apply_run_style(run, rdict):
     if hl and hl in HIGHLIGHT_MAP:
         f.highlight_color = HIGHLIGHT_MAP[hl]
 
-def add_paragraph_block(doc, bdict):
-    p = doc.add_paragraph("")
-    # restore style first (important for lists/numbering/headings)
+def apply_paragraph_spacing(p, spacing_dict):
+    if not spacing_dict:
+        return
+    pf = p.paragraph_format
+    sb = spacing_dict.get("space_before_pt")
+    sa = spacing_dict.get("space_after_pt")
+    ls = spacing_dict.get("line_spacing")
+    lr = spacing_dict.get("line_spacing_rule")
+
+    if sb is not None:
+        pf.space_before = Pt(float(sb))
+    if sa is not None:
+        pf.space_after = Pt(float(sa))
+
+    # line spacing rule first, then value if MULTIPLE or EXACT values
+    if lr:
+        try:
+            pf.line_spacing_rule = getattr(WD_LINE_SPACING, lr)
+        except Exception:
+            pass
+
+    if ls is not None:
+        # If rule is MULTIPLE, Word expects a float like 1.0, 1.15, 1.5, 2.0
+        # If rule is AT_LEAST/EXACTLY, python-docx expects a length (pt).
+        if pf.line_spacing_rule == WD_LINE_SPACING.MULTIPLE:
+            pf.line_spacing = float(ls)
+        else:
+            # treat as points
+            pf.line_spacing = Pt(float(ls))
+
+def apply_list_numbering(p, list_dict):
+    """
+    Set w:numPr on the paragraph.
+    IMPORTANT: the output doc must come from a template that already has
+    the numbering definitions for these numId values.
+    """
+    if not list_dict:
+        return
+    num_id = list_dict.get("numId")
+    ilvl = list_dict.get("ilvl", 0)
+    if num_id is None:
+        return
+
+    pPr = p._p.get_or_add_pPr()
+    # remove existing numPr if any
+    for child in list(pPr):
+        if child.tag == qn("w:numPr"):
+            pPr.remove(child)
+
+    numPr = OxmlElement("w:numPr")
+    ilvl_el = OxmlElement("w:ilvl")
+    ilvl_el.set(qn("w:val"), str(ilvl))
+    numId_el = OxmlElement("w:numId")
+    numId_el.set(qn("w:val"), str(num_id))
+    numPr.append(ilvl_el)
+    numPr.append(numId_el)
+    pPr.append(numPr)
+
+def add_paragraph_block(container, bdict):
+    # container can be Document or _Cell
+    p = container.add_paragraph("")
+    # style first (so spacing defaults are correct if styles carry them)
     if bdict.get("style"):
         try:
             p.style = bdict["style"]
         except Exception:
-            # style might not exist in this template; fall back to Normal
             pass
     # alignment
     a = bdict.get("alignment")
     if a and a in ALIGN_MAP:
         p.alignment = ALIGN_MAP[a]
+
+    # NEW: spacing
+    apply_paragraph_spacing(p, bdict.get("spacing"))
+
     # runs
     for r in bdict.get("runs", []):
         run = p.add_run(r.get("text", ""))
         apply_run_style(run, r)
+
+    # NEW: apply numbering last
+    apply_list_numbering(p, bdict.get("list"))
+
     return p
+
 
 def add_table_block(doc, bdict):
     rows = bdict["rows"]
