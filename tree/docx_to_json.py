@@ -80,28 +80,38 @@ def paragraph_to_dict(p, doc):
         line_spacing = float(getattr(ls_val, "pt", 0.0)) if ls_val else None
     line_rule = pf.line_spacing_rule.name if pf.line_spacing_rule else None
 
-    # list
+    # NEW: explicit indents
+    left_indent  = float(pf.left_indent.pt) if pf.left_indent else None
+    first_line   = float(pf.first_line_indent.pt) if pf.first_line_indent else None
+
+    # list info
     list_info = None
     pPr = p._p.pPr
     if pPr is not None and pPr.numPr is not None and pPr.numPr.numId is not None:
         numId = int(pPr.numPr.numId.val)
-        ilvl = int(pPr.numPr.ilvl.val) if pPr.numPr.ilvl is not None else 0
+        ilvl  = int(pPr.numPr.ilvl.val) if pPr.numPr.ilvl is not None else 0
         fmt, lvl_text = _get_num_fmt_for(p, doc)
         list_info = {"numId": numId, "ilvl": ilvl, "fmt": fmt, "lvl_text": lvl_text}
 
     return {
         "type": "paragraph",
         "style": style_name,
-        "alignment": paragraph_alignment_name(p),
+        "alignment": p.alignment.name if p.alignment else None,
         "spacing": {
             "space_before_pt": space_before,
-            "space_after_pt": space_after,
-            "line_spacing": line_spacing,
+            "space_after_pt":  space_after,
+            "line_spacing":    line_spacing,
             "line_spacing_rule": line_rule,
+        },
+        # store indents separately
+        "indents": {
+            "left_indent_pt": left_indent,
+            "first_line_indent_pt": first_line,
         },
         "list": list_info,
         "runs": [run_to_dict(r) for r in p.runs],
     }
+
 
 def table_to_dict(t, doc):
     rows = []
