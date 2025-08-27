@@ -187,8 +187,13 @@ def json_to_docx(json_path: str, docx_out: str, template: str | None = None, cle
         remove_initial_blank_paragraph(doc)  # safe for new documents
 
     for b in data["document"]["blocks"]:
-        # ...same as before...
-        pass
+        btype = b.get("type")
+        if btype == "paragraph":
+            add_paragraph_block(doc, b)
+        elif btype == "table":
+            add_table_block(doc, b)
+        elif btype == "page_break":
+            doc.add_page_break()
 
     os.makedirs(os.path.dirname(docx_out) or ".", exist_ok=True)
     doc.save(docx_out) 
